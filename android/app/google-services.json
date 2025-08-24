@@ -1,0 +1,54 @@
+{
+	"project_info": {
+		"project_number": "822662017715",
+		"project_id": "nrg-trade",
+		"storage_bucket": "nrg-trade.firebasestorage.app"
+	},
+	"client": [
+		{
+			"client_info": {
+				"mobilesdk_app_id": "1:822662017715:android:081aee514f1b44f5ed76c6",
+				"android_client_info": {
+					"package_name": "com.example.energy_app"
+				}
+			},
+			"oauth_client": [
+				{
+					"client_id": "822662017715-3alm0f4f9fe95vadj0sed5mdfei07o1h.apps.googleusercontent.com",
+					"client_type": 1,
+					"android_info": {
+						"package_name": "com.example.energy_app",
+						"certificate_hash": "870e3b0e02461f11ac341158500c09e5768f47d9"
+					}
+				},
+				{
+					"client_id": "822662017715-0ucv59bmgialqhon18tkampkcl60jmqm.apps.googleusercontent.com",
+					"client_type": 3
+				}
+			],
+			"api_key": [
+				{
+					"current_key": "AIzaSyDlTq53b42ipC-EVcr8lHuEjH6OuR2nXLg"
+				}
+			],
+			"services": {
+				"appinvite_service": {
+					"other_platform_oauth_client": [
+						{
+							"client_id": "822662017715-0ucv59bmgialqhon18tkampkcl60jmqm.apps.googleusercontent.com",
+							"client_type": 3
+						},
+						{
+							"client_id": "822662017715-r02sdr9aohq97fbgvl3vjai9eb6fvrq7.apps.googleusercontent.com",
+							"client_type": 2,
+							"ios_info": {
+								"bundle_id": "com.example.energyApp"
+							}
+						}
+					]
+				}
+			}
+		}
+	],
+	"configuration_version": "1"
+}
