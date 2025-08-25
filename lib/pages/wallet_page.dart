@@ -68,6 +68,53 @@ class _WalletPageState extends State<WalletPage> {
     );
   }
 
+  Future<void> _showWithdrawSheet() async {
+    final c = TextEditingController();
+    await showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Withdraw Demo Coins',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: c,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Amount',
+                hintText: 'e.g. 50',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            FilledButton.tonal(
+              onPressed: () async {
+                final amt = double.tryParse(c.text.trim()) ?? 0;
+                try {
+                  await _svc.withdraw(_uid, amt);
+                  if (mounted) Navigator.pop(context);
+                } catch (e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(e.toString())));
+                }
+              },
+              child: const Text('Withdraw'),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,9 +142,18 @@ class _WalletPageState extends State<WalletPage> {
                 child: ListTile(
                   title: const Text('Demo Coins'),
                   subtitle: Text(bal, style: const TextStyle(fontSize: 20)),
-                  trailing: FilledButton(
-                    onPressed: _showDepositSheet,
-                    child: const Text('Top Up'),
+                  trailing: Wrap(
+                    spacing: 8,
+                    children: [
+                      FilledButton(
+                        onPressed: _showDepositSheet,
+                        child: const Text('Top Up'),
+                      ),
+                      FilledButton.tonal(
+                        onPressed: _showWithdrawSheet,
+                        child: const Text('Withdraw'),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -134,13 +190,22 @@ class _WalletPageState extends State<WalletPage> {
                     leading: Icon(
                       type == 'deposit'
                           ? Icons.arrow_downward
-                          : Icons.swap_horiz,
+                          : Icons.arrow_upward,
                     ),
-                    title: Text(type == 'deposit' ? 'Deposit' : type),
+                    title: Text(
+                      type == 'deposit'
+                          ? 'Deposit'
+                          : (type == 'withdraw')
+                          ? 'Withdraw'
+                          : type,
+                    ),
                     subtitle: when.isEmpty ? null : Text(when),
                     trailing: Text(
-                      (type == 'deposit' ? '+' : '') + amt,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      (type == 'deposit' ? '+$amt' : '-$amt'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: type == 'deposit' ? Colors.green : Colors.red,
+                      ),
                     ),
                   );
                 },

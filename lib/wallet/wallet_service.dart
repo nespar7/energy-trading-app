@@ -41,4 +41,26 @@ class WalletService {
       txn.set(wallet, {'balanceCoins': curr + amount}, SetOptions(merge: true));
     });
   }
+
+  Future<void> withdraw(String uid, double amount) async {
+    if (amount <= 0) {
+      throw ArgumentError('Amount must be > 0');
+    }
+    final wallet = _walletRef(uid);
+    final tx = _txCol(uid).doc();
+
+    await _db.runTransaction((txn) async {
+      final wSnap = await txn.get(wallet);
+      final curr = (wSnap.data()?['balanceCoins'] as num?)?.toDouble() ?? 0.0;
+      if (amount > curr) {
+        throw StateError('Insufficient funds');
+      }
+      txn.set(tx, {
+        'type': 'withdraw',
+        'amount': amount,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      txn.set(wallet, {'balanceCoins': curr - amount}, SetOptions(merge: true));
+    });
+  }
 }
