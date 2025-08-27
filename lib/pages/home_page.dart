@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:energy_app/energy/energy_api.dart';
+import 'package:energy_app/energy/energy_repository.dart';
 import 'package:energy_app/pages/wallet_page.dart';
 import 'package:energy_app/wallet/wallet_service.dart';
+import 'package:energy_app/widgets/scrollable_energy_chart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../auth/auth_service.dart';
@@ -13,6 +16,7 @@ class HomePage extends StatelessWidget {
     final auth = AuthService();
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final wallet = WalletService(FirebaseFirestore.instance);
+    final energyRepo = EnergyRepository(FirebaseFirestore.instance);
 
     return Scaffold(
       appBar: AppBar(
@@ -62,9 +66,97 @@ class HomePage extends StatelessWidget {
             },
           ),
           const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              OutlinedButton(
+                onPressed: () async {
+                  try {
+                    await EnergyApi.I.upsertRange(hours: 3);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Synced last 3h')),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    }
+                  }
+                },
+                child: const Text('Sync 3h'),
+              ),
+              const SizedBox(width: 8),
+              FilledButton.tonal(
+                onPressed: () async {
+                  try {
+                    await EnergyApi.I.upsertBucket();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Ticked 1 bucket')),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    }
+                  }
+                },
+                child: const Text('Tick'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
 
-          // Your existing content placeholder
-          const Center(child: Text('Logged in!')),
+          // Battery gauge (optional)
+          StreamBuilder<Map<String, dynamic>?>(
+            stream: energyRepo.battery(uid),
+            builder: (context, snap) {
+              final m = snap.data;
+              if (m == null) return const SizedBox.shrink();
+              final cap = (m['capacityKwh'] as num?)?.toDouble() ?? 0;
+              final soc = (m['socKwh'] as num?)?.toDouble() ?? 0;
+              final pct = cap > 0 ? (soc / cap).clamp(0.0, 1.0) : 0.0;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Battery: ${soc.toStringAsFixed(2)} / ${cap.toStringAsFixed(1)} kWh',
+                  ),
+                  const SizedBox(height: 4),
+                  LinearProgressIndicator(value: pct),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+
+          StreamBuilder<List<Map<String, dynamic>>>(
+            stream: energyRepo.lastNH(uid, hours: 12), // load 12h to scroll
+            builder: (context, snap) {
+              final bars = snap.data ?? const [];
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Energy (scroll • 15m buckets)',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      ScrollableEnergyChart(bars: bars), // <-- new widget
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );

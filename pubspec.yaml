@@ -45,6 +45,8 @@ dependencies:
   equatable: ^2.0.7
   google_sign_in: ^6.1.5
   bloc: ^9.0.0
+  dio: ^5.4.3
+  fl_chart: ^0.69.0
 
 dev_dependencies:
   flutter_test:
