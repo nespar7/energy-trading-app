@@ -1,4 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:energy_app/util/session.dart';
+import 'package:energy_app/widgets/app_drawer.dart';
+import 'package:energy_app/widgets/transaction_tile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../wallet/wallet_service.dart';
@@ -118,6 +121,7 @@ class _WalletPageState extends State<WalletPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: AppDrawer(),
       appBar: AppBar(
         title: const Text('Wallet'),
         actions: [
@@ -125,7 +129,7 @@ class _WalletPageState extends State<WalletPage> {
             tooltip: 'Sign out',
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              await FirebaseAuth.instance.signOut();
+              await Session.logout(context);
             },
           ),
         ],
@@ -168,6 +172,7 @@ class _WalletPageState extends State<WalletPage> {
             stream: _svc.txnsStream(_uid, limit: 100),
             builder: (_, snap) {
               final items = snap.data ?? const [];
+              print(items);
               if (items.isEmpty) {
                 return const Text('No transactions yet');
               }
@@ -177,37 +182,7 @@ class _WalletPageState extends State<WalletPage> {
                 itemCount: items.length,
                 separatorBuilder: (_, __) => const Divider(height: 1),
                 itemBuilder: (_, i) {
-                  final t = items[i];
-                  final type = (t['type'] ?? '').toString();
-                  final amt = ((t['amount'] as num?)?.toDouble() ?? 0)
-                      .toStringAsFixed(2);
-                  final ts = t['createdAt'];
-                  String when = '';
-                  if (ts is Timestamp) {
-                    when = ts.toDate().toLocal().toString();
-                  }
-                  return ListTile(
-                    leading: Icon(
-                      type == 'deposit'
-                          ? Icons.arrow_downward
-                          : Icons.arrow_upward,
-                    ),
-                    title: Text(
-                      type == 'deposit'
-                          ? 'Deposit'
-                          : (type == 'withdraw')
-                          ? 'Withdraw'
-                          : type,
-                    ),
-                    subtitle: when.isEmpty ? null : Text(when),
-                    trailing: Text(
-                      (type == 'deposit' ? '+$amt' : '-$amt'),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: type == 'deposit' ? Colors.green : Colors.red,
-                      ),
-                    ),
-                  );
+                  return TransactionTile(t: items[i]);
                 },
               );
             },

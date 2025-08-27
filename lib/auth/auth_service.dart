@@ -17,10 +17,36 @@ class AuthService {
         idToken: googleAuth.idToken,
       );
       return await _auth.signInWithCredential(credential);
-    } catch (e) {
-      // show in debug console; avoid leaking toasts with raw errors
+    } on Exception catch (e, st) {
+      // Some buggy versions throw even though the user is actually signed in.
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // fabricate a minimal UserCredential-like result if you need it downstream
+        // or just return null and rely on authStateChanges()
+        // print('Recovered from plugin decode issue: ${user.uid}');
+      } else {
+        // Log & surface
+        // ignore: avoid_print
+        print('Error during Google sign-in: $e\n$st');
+      }
+      return null;
+    }
+  }
+
+  Future<UserCredential?> signInWithGoogleNative() async {
+    try {
+      final googleProvider = GoogleAuthProvider();
+      // Optional scopes:
+      // googleProvider.addScope('email');
+      // googleProvider.setCustomParameters({'prompt': 'select_account'});
+
+      final cred = await FirebaseAuth.instance.signInWithProvider(
+        googleProvider,
+      );
+      return cred;
+    } catch (e, st) {
       // ignore: avoid_print
-      print('Error during Google sign-in: $e');
+      print('Error during Google sign-in: $e\n$st');
       return null;
     }
   }

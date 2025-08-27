@@ -2,23 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:energy_app/energy/energy_api.dart';
 import 'package:energy_app/energy/energy_repository.dart';
 import 'package:energy_app/pages/wallet_page.dart';
+import 'package:energy_app/util/session.dart';
 import 'package:energy_app/wallet/wallet_service.dart';
+import 'package:energy_app/widgets/app_drawer.dart';
 import 'package:energy_app/widgets/scrollable_energy_chart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../auth/auth_service.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final auth = AuthService();
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final wallet = WalletService(FirebaseFirestore.instance);
     final energyRepo = EnergyRepository(FirebaseFirestore.instance);
 
     return Scaffold(
+      drawer: AppDrawer(),
       appBar: AppBar(
         title: const Text('Home'),
         actions: [
@@ -34,7 +35,7 @@ class HomePage extends StatelessWidget {
           IconButton(
             tooltip: 'signout',
             icon: const Icon(Icons.logout),
-            onPressed: () => auth.signOut(),
+            onPressed: () => Session.logout(context),
           ),
         ],
       ),
