@@ -43,10 +43,10 @@ class HomePage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           // Mini wallet card (live balance)
-          StreamBuilder<double>(
+          StreamBuilder<String>(
             stream: wallet.balanceStream(uid),
             builder: (context, snap) {
-              final bal = (snap.data ?? 0).toStringAsFixed(2);
+              final bal = (snap.data ?? '0.00');
               return Card(
                 child: ListTile(
                   title: const Text('Wallet'),

@@ -26,7 +26,7 @@ class TransactionUtil {
       label: 'buy',
       icon: Icons.arrow_upward,
       color: Colors.redAccent,
-      prefix: '-',
+      prefix: '',
     ),
   };
 

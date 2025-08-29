@@ -10,15 +10,21 @@ class WalletService {
   CollectionReference<Map<String, dynamic>> _txCol(String uid) =>
       _db.collection('users').doc(uid).collection('walletTxns');
 
-  Stream<double> balanceStream(String uid) =>
+  Stream<String> balanceStream(String uid) =>
       _walletRef(uid).snapshots().map((d) {
-        final v = (d.data()?['balanceCoins'] as num?);
-        return v?.toDouble() ?? 0.0;
+        final balance = (d.data()?['balanceCoins'] as num?);
+        final reserved = (d.data()?['reservedBuyCoins'] as num?);
+
+        if (reserved == 0) {
+          return '$balance';
+        } else {
+          return '$balance + $reserved(reserved)';
+        }
       });
 
   Stream<List<Map<String, dynamic>>> txnsStream(String uid, {int limit = 50}) =>
       _txCol(uid)
-          .orderBy('createdAt', descending: true)
+          .orderBy('ts', descending: true)
           .limit(limit)
           .snapshots()
           .map((s) => s.docs.map((d) => d.data()).toList());
@@ -36,7 +42,7 @@ class WalletService {
       txn.set(tx, {
         'type': 'deposit',
         'amount': amount,
-        'createdAt': FieldValue.serverTimestamp(),
+        'ts': FieldValue.serverTimestamp(),
       });
       txn.set(wallet, {'balanceCoins': curr + amount}, SetOptions(merge: true));
     });
@@ -58,7 +64,7 @@ class WalletService {
       txn.set(tx, {
         'type': 'withdraw',
         'amount': amount,
-        'createdAt': FieldValue.serverTimestamp(),
+        'ts': FieldValue.serverTimestamp(),
       });
       txn.set(wallet, {'balanceCoins': curr - amount}, SetOptions(merge: true));
     });

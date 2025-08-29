@@ -138,27 +138,36 @@ class _WalletPageState extends State<WalletPage> {
         padding: const EdgeInsets.all(16),
         children: [
           // Balance card
-          StreamBuilder<double>(
+          StreamBuilder<String>(
             stream: _svc.balanceStream(_uid),
             builder: (_, snap) {
-              final bal = (snap.data ?? 0).toStringAsFixed(2);
+              final bal = (snap.data ?? '0.00');
               return Card(
-                child: ListTile(
-                  title: const Text('Demo Coins'),
-                  subtitle: Text(bal, style: const TextStyle(fontSize: 20)),
-                  trailing: Wrap(
-                    spacing: 8,
-                    children: [
-                      FilledButton(
-                        onPressed: _showDepositSheet,
-                        child: const Text('Top Up'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Coins', style: TextStyle(fontSize: 16)),
+                    Text(
+                      bal,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
-                      FilledButton.tonal(
-                        onPressed: _showWithdrawSheet,
-                        child: const Text('Withdraw'),
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        FilledButton(
+                          onPressed: _showDepositSheet,
+                          child: const Text('Top Up'),
+                        ),
+                        FilledButton.tonal(
+                          onPressed: _showWithdrawSheet,
+                          child: const Text('Withdraw'),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               );
             },
@@ -172,7 +181,6 @@ class _WalletPageState extends State<WalletPage> {
             stream: _svc.txnsStream(_uid, limit: 100),
             builder: (_, snap) {
               final items = snap.data ?? const [];
-              print(items);
               if (items.isEmpty) {
                 return const Text('No transactions yet');
               }
